@@ -80,8 +80,8 @@ const userPrompt = () => {
 // function to view the employees table
 const viewEmployees = () => {
     // Query database
-    db.query('SELECT * FROM employee', function (err, results) {
-        console.table(results);
+    db.query('SELECT * FROM employee', function (err, choices) {
+        console.table(choices);
         userPrompt();
     });
 }
@@ -89,8 +89,8 @@ const viewEmployees = () => {
 // function to view the roles table
 const viewRoles = () => {
     // Query database
-    db.query('SELECT * FROM roles', function (err, results) {
-        console.table(results);
+    db.query('SELECT * FROM roles', function (err, choices) {
+        console.table(choices);
         userPrompt();
     });
 }
@@ -98,8 +98,8 @@ const viewRoles = () => {
 // function to view the roles table
 const viewDepartment = () => {
     // Query database
-    db.query('SELECT * FROM department', function (err, results) {
-        console.table(results);
+    db.query('SELECT * FROM department', function (err, choices) {
+        console.table(choices);
         userPrompt();
     });
 }
@@ -120,9 +120,8 @@ const addDepartment = () => {
             },
         }
     ]).then((response) => {
-        const { results } = response
-        db.query('INSERT INTO department(name) VALUES (result)', function (err, results) {
-            console.log(results);
+        db.query('INSERT INTO department(name) VALUES(?)', response.newDepartment ,function (err, results) {
+        viewDepartment();
             userPrompt();
         });
     })
