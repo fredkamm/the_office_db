@@ -11,13 +11,13 @@ app.use(express.json());
 
 // Connect to database
 const db = mysql.createConnection(
-  {
-    host: 'localhost',
-    user: 'root',
-    password: 'password',
-    database: 'employee_db'
-  },
-  console.log(`Connected to the employee_db database.`)
+    {
+        host: 'localhost',
+        user: 'root',
+        password: 'password',
+        database: 'employee_db'
+    },
+    console.log(`Connected to the employee_db database.`)
 );
 
 // THE MAIN PROMPT
@@ -39,42 +39,42 @@ const userPrompt = () => {
             ]
         }
     ])
-    .then((results) => {
-        const {choices} = results;
+        .then((results) => {
+            const { choices } = results;
 
-        if(choices === 'View all employees') {
-            viewEmployees();
-        }
+            if (choices === 'View all employees') {
+                viewEmployees();
+            }
 
-        if(choices === 'Add employee') {
-            console.log((choices));
-        }
-        
-        if(choices === 'Update employee role') {
-            console.log((choices));
-        }
+            if (choices === 'Add employee') {
+                addEmployee();
+            }
 
-        if(choices === 'View all roles') {
-            viewRoles();
-        }
+            if (choices === 'Update employee role') {
+                console.log((choices));
+            }
 
-        if(choices === 'Add role') {
-            console.log((choices));
-        }
+            if (choices === 'View all roles') {
+                viewRoles();
+            }
 
-        if(choices === 'View all departments') {
-            viewDepartment();
-        }
+            if (choices === 'Add role') {
+                addRole();
+            }
 
-        if(choices === 'Add department') {
-            console.log((choices));
-        }
+            if (choices === 'View all departments') {
+                viewDepartment();
+            }
 
-        if(choices === 'Quit') {
-            console.log((choices));
-        }
+            if (choices === 'Add department') {
+                addDepartment();
+            }
 
-    })
+            if (choices === 'Quit') {
+                console.log((choices));
+            }
+
+        })
 }
 
 // function to view the employees table
@@ -83,7 +83,7 @@ const viewEmployees = () => {
     db.query('SELECT * FROM employee', function (err, results) {
         console.table(results);
         userPrompt();
-      });
+    });
 }
 
 // function to view the roles table
@@ -92,7 +92,7 @@ const viewRoles = () => {
     db.query('SELECT * FROM roles', function (err, results) {
         console.table(results);
         userPrompt();
-      });
+    });
 }
 
 // function to view the roles table
@@ -101,9 +101,92 @@ const viewDepartment = () => {
     db.query('SELECT * FROM department', function (err, results) {
         console.table(results);
         userPrompt();
-      });
+    });
+}
+
+// Function to add a new department
+const addDepartment = () => {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'newDepartment',
+            message: 'What is the department name?',
+            validate: (value) => {
+                if (value) {
+                    return true
+                } else {
+                    return 'Input is required!'
+                }
+            },
+        }
+    ]).then((response) => {
+        const { results } = response
+        db.query('INSERT INTO department(name) VALUES (result)', function (err, results) {
+            console.log(results);
+            userPrompt();
+        });
+    })
+}
+
+// function to add a new role
+const addRole = () => {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'newRole',
+            message: 'What is the name of the role?',
+            validate: (value) => {
+                if (value) {
+                    return true
+                } else {
+                    return 'Input is required!'
+                }
+            },
+        },
+        {
+            type: 'input',
+            name: 'newSalery',
+            message: 'What is their salery?',
+            validate: (value) => {
+                if (value === num) {
+                    return true
+                } else {
+                    return 'Input is required!'
+                }
+            },
+        }
+    ])
+}
+
+// function to add a new employee
+const addEmployee = () => {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'firstName',
+            message: 'What is the department name?',
+            validate: (value) => {
+                if (value) {
+                    return true
+                } else {
+                    return 'Input is required!'
+                }
+            },
+        },
+        {
+            type: 'input',
+            name: 'lastName',
+            message: 'What is the department name?',
+            validate: (value) => {
+                if (value) {
+                    return true
+                } else {
+                    return 'Input is required!'
+                }
+            },
+        },
+    ])
 }
 
 userPrompt();
 
-  
