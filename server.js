@@ -1,6 +1,7 @@
 const express = require('express');
 const mysql = require('mysql2');
 const inquirer = require('inquirer')
+const cTable = require("console.table")
 
 
 const PORT = process.env.PORT || 3001;
@@ -29,12 +30,12 @@ const userPrompt = () => {
             message: 'What would you like to do?',
             choices: [
                 'View all employees',
-                'Add employee',
-                'Update employee role',
                 'View all roles',
-                'Add role',
                 'View all departments',
+                'Add employee',
+                'Add role',
                 'Add department',
+                'Update employee role',
                 'Quit'
             ]
         }
@@ -123,6 +124,7 @@ const addDepartment = () => {
             },
         }
     ]).then((response) => {
+        // inserting the new department to the database
         db.query('INSERT INTO department(name) VALUES(?)', response.newDepartment, function (err, results) {
             console.log('Added ' + response.newDepartment + ' to the department database')
             userPrompt();
@@ -187,23 +189,39 @@ const addRole = () => {
             },
         },
     ]).then((response) => {
-
-        db.query('INSERT INTO roles(title, salary, department_id) VALUES(?)', 
-        [[response.newRole, response.newSalary, response.selectDepo]],            function (err, response) {
-            if (err) throw err;
-            console.log(`Successfully added ${response.newRole} to the database`);
-            userPrompt();
+        // inserting the new role to the database
+        db.query('INSERT INTO roles(title, salary, department_id) VALUES(?)',
+            [[response.newRole, response.newSalary, response.selectDepo]], function (err, response) {
+                if (err) throw err;
+                console.log(`Successfully added ${response.newRole} to the database`);
+                userPrompt();
             });
     })
 }
 
 // function to add a new employee
 const addEmployee = () => {
+
+    const roles = [];
+    // retrieving the data for the roles table to use in the prompt
+    db.query('SELECT * FROM roles', (err, res) => {
+        if (err) throw err;
+
+        res.forEach(role => {
+            let newRole = {
+                name: role.title,
+                value: role.id
+            }
+            roles.push(newRole)
+        })
+
+    });
+
     inquirer.prompt([
         {
             type: 'input',
             name: 'firstName',
-            message: 'What is the department name?',
+            message: 'What is the employees first name?',
             validate: (value) => {
                 if (value) {
                     return true
@@ -215,7 +233,7 @@ const addEmployee = () => {
         {
             type: 'input',
             name: 'lastName',
-            message: 'What is the department name?',
+            message: 'What is the employees last name?',
             validate: (value) => {
                 if (value) {
                     return true
@@ -224,7 +242,49 @@ const addEmployee = () => {
                 }
             },
         },
-    ])
+        {
+            type: 'list',
+            name: 'roleList',
+            message: 'What is the employees role?',
+            choices: roles,
+            validate: (value) => {
+                if (value) {
+                    return true
+                } else {
+                    return 'Input is required!'
+                }
+            },
+        },
+        {
+            type: 'list',
+            name: 'managerList',
+            message: 'Who is the employees managers?',
+            choices: 'tbd',
+            validate: (value) => {
+                if (value) {
+                    return true
+                } else {
+                    return 'Input is required!'
+                }
+            },
+        },
+    ]).then((response) => {
+        // inserting the new employee to the database
+        db.query('INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES(?)',
+            [
+                [
+                    response.firstName,
+                    response.lastName,
+                    response.roleList,
+                    response.managerList
+                ]
+            ],
+            function (err, response) {
+                if (err) throw err;
+                console.log(`Successfully added ${response.firstName} ${response.lastName} to the database`);
+                userPrompt();
+            });
+    })
 }
 
 userPrompt();
