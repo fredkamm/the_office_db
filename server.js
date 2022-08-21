@@ -134,7 +134,7 @@ const addDepartment = () => {
 const addRole = () => {
 
     const departments = [];
-
+    // retrieving the data for the departments table to use in the prompt
     db.query('SELECT * FROM department', (err, res) => {
         if (err) throw err;
 
@@ -163,7 +163,7 @@ const addRole = () => {
         },
         {
             type: 'input',
-            name: 'newSalery',
+            name: 'newSalary',
             message: 'What is their salery?',
             validate: (value) => {
                 if (value) {
@@ -188,9 +188,11 @@ const addRole = () => {
         },
     ]).then((response) => {
 
-        db.query('INSERT INTO roles(title, salary, department_id) VALUES(?)', response.newSalary,
-            function (err, response) {
-                viewRoles();
+        db.query('INSERT INTO roles(title, salary, department_id) VALUES(?)', 
+        [[response.newRole, response.newSalary, response.selectDepo]],            function (err, response) {
+            if (err) throw err;
+            console.log(`Successfully added ${response.newRole} to the database`);
+            userPrompt();
             });
     })
 }
