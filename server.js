@@ -43,6 +43,7 @@ const userPrompt = () => {
             const { choices } = results;
 
             if (choices === 'View all employees') {
+                console.log('Viewing current employees');
                 viewEmployees();
             }
 
@@ -55,6 +56,7 @@ const userPrompt = () => {
             }
 
             if (choices === 'View all roles') {
+                console.log('Viewing current roles');
                 viewRoles();
             }
 
@@ -63,6 +65,7 @@ const userPrompt = () => {
             }
 
             if (choices === 'View all departments') {
+                console.log('Viewing current departments');
                 viewDepartment();
             }
 
@@ -79,7 +82,7 @@ const userPrompt = () => {
 
 // function to view the employees table
 const viewEmployees = () => {
-    // Query database
+
     db.query('SELECT * FROM employee', function (err, choices) {
         console.table(choices);
         userPrompt();
@@ -88,7 +91,7 @@ const viewEmployees = () => {
 
 // function to view the roles table
 const viewRoles = () => {
-    // Query database
+
     db.query('SELECT * FROM roles', function (err, choices) {
         console.table(choices);
         userPrompt();
@@ -97,7 +100,7 @@ const viewRoles = () => {
 
 // function to view the roles table
 const viewDepartment = () => {
-    // Query database
+
     db.query('SELECT * FROM department', function (err, choices) {
         console.table(choices);
         userPrompt();
@@ -120,8 +123,8 @@ const addDepartment = () => {
             },
         }
     ]).then((response) => {
-        db.query('INSERT INTO department(name) VALUES(?)', response.newDepartment ,function (err, results) {
-        viewDepartment();
+        db.query('INSERT INTO department(name) VALUES(?)', response.newDepartment, function (err, results) {
+            console.log('Added ' + response.newDepartment + ' to the department database')
             userPrompt();
         });
     })
@@ -129,6 +132,22 @@ const addDepartment = () => {
 
 // function to add a new role
 const addRole = () => {
+
+    const departments = [];
+
+    db.query('SELECT * FROM department', (err, res) => {
+        if (err) throw err;
+
+        res.forEach(dep => {
+            let depo = {
+                name: dep.name,
+                value: dep.id
+            }
+            departments.push(depo)
+        })
+
+    });
+
     inquirer.prompt([
         {
             type: 'input',
@@ -147,14 +166,33 @@ const addRole = () => {
             name: 'newSalery',
             message: 'What is their salery?',
             validate: (value) => {
-                if (value === num) {
+                if (value) {
                     return true
                 } else {
                     return 'Input is required!'
                 }
             },
-        }
-    ])
+        },
+        {
+            type: 'list',
+            name: 'selectDepo',
+            message: 'What department is this role in?',
+            choices: departments,
+            validate: (value) => {
+                if (value) {
+                    return true
+                } else {
+                    return 'Input is required!'
+                }
+            },
+        },
+    ]).then((response) => {
+
+        db.query('INSERT INTO roles(title, salary, department_id) VALUES(?)', response.newSalary,
+            function (err, response) {
+                viewRoles();
+            });
+    })
 }
 
 // function to add a new employee

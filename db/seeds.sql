@@ -1,9 +1,9 @@
 INSERT INTO department (name)
-VALUES ("Sales"), ("Management"), ("Marketing"), ("Engineering");
+VALUES ("Management"), ("Sales"), ("Marketing"), ("Engineering");
 
 INSERT INTO roles (title, salary, department_id)
-VALUES ("CEO", 500000, 2),
-        ("General Manager", 150000, 2),
+VALUES ("CEO", 500000, 1),
+        ("General Manager", 150000, 1),
         ("Senior-Engineer", 125000, 4),
         ("Junior-Engineer", 75000, 4);
         
