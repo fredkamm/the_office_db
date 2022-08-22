@@ -53,7 +53,7 @@ const userPrompt = () => {
             }
 
             if (choices === 'Update employee role') {
-                console.log((choices));
+                editEmployee();
             }
 
             if (choices === 'View all roles') {
@@ -75,11 +75,11 @@ const userPrompt = () => {
             }
 
             if (choices === 'Quit') {
-                console.log((choices));
+                console.log('You selected quit');
             }
 
         })
-}
+};
 
 // function to view the employees table
 const viewEmployees = () => {
@@ -88,7 +88,7 @@ const viewEmployees = () => {
         console.table(choices);
         userPrompt();
     });
-}
+};
 
 // function to view the roles table
 const viewRoles = () => {
@@ -97,7 +97,7 @@ const viewRoles = () => {
         console.table(choices);
         userPrompt();
     });
-}
+};
 
 // function to view the roles table
 const viewDepartment = () => {
@@ -106,7 +106,7 @@ const viewDepartment = () => {
         console.table(choices);
         userPrompt();
     });
-}
+};
 
 // Function to add a new department
 const addDepartment = () => {
@@ -130,7 +130,7 @@ const addDepartment = () => {
             userPrompt();
         });
     })
-}
+};
 
 // function to add a new role
 const addRole = () => {
@@ -180,13 +180,6 @@ const addRole = () => {
             name: 'selectDepo',
             message: 'What department is this role in?',
             choices: departments,
-            validate: (value) => {
-                if (value) {
-                    return true
-                } else {
-                    return 'Input is required!'
-                }
-            },
         },
     ]).then((response) => {
         // inserting the new role to the database
@@ -197,7 +190,7 @@ const addRole = () => {
                 userPrompt();
             });
     })
-}
+};
 
 // function to add a new employee
 const addEmployee = () => {
@@ -213,6 +206,21 @@ const addEmployee = () => {
                 value: role.id
             }
             roles.push(newRole)
+        })
+
+    });
+
+    const managers = [];
+    // retrieving the data for the roles table to use in the prompt
+    db.query('SELECT * FROM employee', (err, res) => {
+        if (err) throw err;
+
+        res.forEach(role => {
+            let manager = {
+                name: role.first_name + ' ' + role.last_name,
+                value: role.id
+            }
+            managers.push(manager)
         })
 
     });
@@ -247,26 +255,12 @@ const addEmployee = () => {
             name: 'roleList',
             message: 'What is the employees role?',
             choices: roles,
-            validate: (value) => {
-                if (value) {
-                    return true
-                } else {
-                    return 'Input is required!'
-                }
-            },
         },
         {
             type: 'list',
             name: 'managerList',
             message: 'Who is the employees managers?',
-            choices: 'tbd',
-            validate: (value) => {
-                if (value) {
-                    return true
-                } else {
-                    return 'Input is required!'
-                }
-            },
+            choices: managers,
         },
     ]).then((response) => {
         // inserting the new employee to the database
@@ -285,6 +279,54 @@ const addEmployee = () => {
                 userPrompt();
             });
     })
+};
+
+const editEmployee = () => {
+
+    const employees = [];
+    // retrieving the data for the employees table to use in the prompt
+    db.query('SELECT * FROM employee', (err, res) => {
+        if (err) throw err;
+
+        res.forEach(employee => {
+            let edit = {
+                name: employee.first_name,
+                value: employee.id
+            }
+            employees.push(edit)
+        })
+
+    });
+
+    const roles = [];
+    // retrieving the data for the roles table to use in the prompt
+    db.query('SELECT * FROM roles', (err, res) => {
+        if (err) throw err;
+
+        res.forEach(role => {
+            let editRole = {
+                name: role.title,
+                value: role.id
+            }
+            roles.push(editRole)
+        })
+
+    });
+
+    inquirer.prompt([
+        // {
+        //     type: 'list',
+        //     name: 'employeeList',
+        //     message: 'Which employees role would you like to update?',
+        //     choices: employees,
+        // },
+        {
+            type: 'list',
+            name: 'roleList',
+            message: 'Which role would you like to assign the selected employee?',
+            choices: roles,
+        }
+    ])
 }
 
 userPrompt();
