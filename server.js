@@ -1,7 +1,8 @@
 const express = require('express');
 const mysql = require('mysql2');
 const inquirer = require('inquirer')
-const cTable = require("console.table")
+const cTable = require("console.table");
+const { response } = require('express');
 
 
 const PORT = process.env.PORT || 3001;
@@ -48,21 +49,9 @@ const userPrompt = () => {
                 viewEmployees();
             }
 
-            if (choices === 'Add employee') {
-                addEmployee();
-            }
-
-            if (choices === 'Update employee role') {
-                editEmployee();
-            }
-
             if (choices === 'View all roles') {
                 console.log('Viewing current roles');
                 viewRoles();
-            }
-
-            if (choices === 'Add role') {
-                addRole();
             }
 
             if (choices === 'View all departments') {
@@ -70,8 +59,20 @@ const userPrompt = () => {
                 viewDepartment();
             }
 
+            if (choices === 'Add employee') {
+                addEmployee();
+            }
+
+            if (choices === 'Add role') {
+                addRole();
+            }
+
             if (choices === 'Add department') {
                 addDepartment();
+            }
+
+            if (choices === 'Update employee role') {
+                editEmployee();
             }
 
             if (choices === 'Quit') {
@@ -281,52 +282,60 @@ const addEmployee = () => {
     })
 };
 
+// function that will edit the employee
 const editEmployee = () => {
 
-    const employees = [];
+    const employee = [];
+    const roles = [];
     // retrieving the data for the employees table to use in the prompt
     db.query('SELECT * FROM employee', (err, res) => {
         if (err) throw err;
 
-        res.forEach(employee => {
-            let edit = {
-                name: employee.first_name,
-                value: employee.id
-            }
-            employees.push(edit)
-        })
-
-    });
-
-    const roles = [];
-    // retrieving the data for the roles table to use in the prompt
-    db.query('SELECT * FROM roles', (err, res) => {
-        if (err) throw err;
-
         res.forEach(role => {
-            let editRole = {
-                name: role.title,
+            let manager = {
+                name: role.first_name + ' ' + role.last_name,
                 value: role.id
             }
-            roles.push(editRole)
+            employee.push(manager)
         })
+        // retrieving the data for the roles table to use in the prompt
+        db.query('SELECT * FROM roles', (err, res) => {
+            if (err) throw err;
 
-    });
-
-    inquirer.prompt([
-        // {
-        //     type: 'list',
-        //     name: 'employeeList',
-        //     message: 'Which employees role would you like to update?',
-        //     choices: employees,
-        // },
-        {
-            type: 'list',
-            name: 'roleList',
-            message: 'Which role would you like to assign the selected employee?',
-            choices: roles,
-        }
-    ])
+            res.forEach(role => {
+                let editRole = {
+                    name: role.title,
+                    value: role.id
+                }
+                roles.push(editRole)
+            })
+        })
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'employeeList',
+                message: 'Which employees role would you like to update?',
+                choices: employee,
+            },
+            {
+                type: 'list',
+                name: 'roleList',
+                message: 'Which role would you like to assign the selected employee?',
+                choices: roles,
+            }
+        ]).then((response) => {
+            const sql = `UPDATE employee SET role_id = ? WHERE id = ?`;
+            const obj = [response.roleList, response.employeeList];
+            
+            db.query(sql, obj, function (err) {
+                if (err) throw err;
+                console.log(`Successfully updated employees role!`);
+                userPrompt();
+            })
+        });
+            
+        
+    })
 }
 
 userPrompt();
